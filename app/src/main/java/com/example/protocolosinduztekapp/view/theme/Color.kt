@@ -1,4 +1,4 @@
-package com.example.protocolosinduztekapp.ui.theme
+package com.example.protocolosinduztekapp.view.theme
 
 import androidx.compose.ui.graphics.Color
 

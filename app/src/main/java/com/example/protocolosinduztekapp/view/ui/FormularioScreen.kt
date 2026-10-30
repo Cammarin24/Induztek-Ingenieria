@@ -1,0 +1,122 @@
+package com.example.protocolosinduztekapp.view.ui
+
+import android.widget.Toast
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import com.example.protocolosinduztekapp.viewmodels.PruebaViewModel
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun FormularioScreen(navController: NavController, viewModel: PruebaViewModel) {
+    val context = LocalContext.current
+    val estado by viewModel.formulario.collectAsState()
+
+
+    DisposableEffect(Unit) {
+        onDispose { viewModel.limpiarFormulario() }
+    }
+
+
+    LaunchedEffect(estado.guardado) {
+        if (estado.guardado) {
+            Toast.makeText(context, "¡Protocolo guardado con éxito!", Toast.LENGTH_SHORT).show()
+            navController.popBackStack()
+        }
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Nuevo Protocolo") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+                    }
+                }
+            )
+        }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            OutlinedTextField(
+                value = estado.codigo,
+                onValueChange = viewModel::onCodigoChange,
+                label = { Text("Código del Equipo") },
+                placeholder = { Text("TR-001") },
+                leadingIcon = { Icon(Icons.Default.Edit, contentDescription = null) },
+                trailingIcon = { IconoEstado(valor = estado.codigo, error = estado.errorCodigo) },
+                isError = estado.errorCodigo != null,
+                supportingText = { estado.errorCodigo?.let { Text(it) } },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            OutlinedTextField(
+                value = estado.tipo,
+                onValueChange = viewModel::onTipoChange,
+                label = { Text("Tipo de Equipo (ej. Transformador)") },
+                leadingIcon = { Icon(Icons.Default.Build, contentDescription = null) },
+                trailingIcon = { IconoEstado(valor = estado.tipo, error = estado.errorTipo) },
+                isError = estado.errorTipo != null,
+                supportingText = { estado.errorTipo?.let { Text(it) } },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            OutlinedTextField(
+                value = estado.medicion,
+                onValueChange = viewModel::onMedicionChange,
+                label = { Text("Valor de Medición (V / A)") },
+                leadingIcon = { Icon(Icons.Default.Info, contentDescription = null) },
+                trailingIcon = { IconoEstado(valor = estado.medicion, error = estado.errorMedicion) },
+                isError = estado.errorMedicion != null,
+                supportingText = { estado.errorMedicion?.let { Text(it) } },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = { viewModel.guardarFormulario() },
+                modifier = Modifier.fillMaxWidth().height(50.dp)
+            ) {
+                Text("Guardar en Base de Datos")
+            }
+        }
+    }
+}
+
+
+@Composable
+private fun IconoEstado(valor: String, error: String?) {
+    when {
+        error != null -> Icon(
+            Icons.Default.Warning,
+            contentDescription = "Error",
+            tint = MaterialTheme.colorScheme.error
+        )
+        valor.isNotBlank() -> Icon(
+            Icons.Default.CheckCircle,
+            contentDescription = "Correcto",
+            tint = Color(0xFF2E7D32)
+        )
+    }
+}

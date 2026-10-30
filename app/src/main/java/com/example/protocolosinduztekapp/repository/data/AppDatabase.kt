@@ -1,21 +1,10 @@
-package com.example.protocolosinduztekapp
+package com.example.protocolosinduztekapp.repository.data
 
 import android.content.Context
-import androidx.room.*
-import kotlinx.coroutines.flow.Flow
-
-@Dao
-interface PruebaDao {
-    @Query("SELECT * FROM tabla_pruebas ORDER BY id DESC")
-    fun obtenerPruebas(): Flow<List<PruebaEntity>>
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertarPrueba(prueba: PruebaEntity)
-
-    // <-- Añade esta función para eliminar por objeto
-    @Delete
-    suspend fun eliminarPrueba(prueba: PruebaEntity)
-}
+import androidx.room.Database
+import androidx.room.Room
+import androidx.room.RoomDatabase
+import com.example.protocolosinduztekapp.repository.models.PruebaEntity
 
 @Database(entities = [PruebaEntity::class], version = 1)
 abstract class AppDatabase : RoomDatabase() {

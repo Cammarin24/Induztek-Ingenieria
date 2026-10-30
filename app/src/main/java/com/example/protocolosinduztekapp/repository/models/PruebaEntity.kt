@@ -1,4 +1,4 @@
-package com.example.protocolosinduztekapp
+package com.example.protocolosinduztekapp.repository.models
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

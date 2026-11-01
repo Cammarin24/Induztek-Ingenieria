@@ -20,6 +20,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.protocolosinduztekapp.repository.models.PruebaEntity
 import com.example.protocolosinduztekapp.viewmodels.PruebaViewModel
+import java.util.Locale
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -111,6 +112,23 @@ fun HistorialScreen(navController: NavController, viewModel: PruebaViewModel, pr
                                         )
                                         Spacer(modifier = Modifier.width(4.dp))
                                         Text(item.fecha, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.secondary)
+
+                                        if (item.latitud != null && item.longitud != null) {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Icon(
+                                                    Icons.Default.LocationOn,
+                                                    contentDescription = null,
+                                                    tint = MaterialTheme.colorScheme.secondary,
+                                                    modifier = Modifier.size(14.dp)
+                                                )
+                                                Spacer(modifier = Modifier.width(4.dp))
+                                                Text(
+                                                    String.format(Locale.US, "%.4f, %.4f", item.latitud, item.longitud),
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                    color = MaterialTheme.colorScheme.secondary
+                                                )
+                                            }
+                                        }
                                     }
                                 }
 

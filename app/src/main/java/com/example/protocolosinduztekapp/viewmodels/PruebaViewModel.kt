@@ -24,6 +24,10 @@ data class FormularioUiState(
     val equipoTexto: String = "",
     val medicion: String = "",
     val fotoUri: String? = null,
+    val latitud: Double? = null,
+    val longitud: Double? = null,
+    val cargandoUbicacion: Boolean = false,
+    val errorUbicacion: String? = null,
     val errorEquipo: String? = null,
     val errorMedicion: String? = null,
     val guardado: Boolean = false
@@ -62,9 +66,24 @@ class PruebaViewModel(application: Application) : AndroidViewModel(application) 
         _formulario.update { it.copy(medicion = valor, errorMedicion = Validaciones.validarMedicion(valor)) }
     }
 
-    // La cámara devuelve la ruta de la foto tomada
+
     fun onFotoTomada(uri: String) {
         _formulario.update { it.copy(fotoUri = uri) }
+    }
+
+
+    fun onUbicacionCargando() {
+        _formulario.update { it.copy(cargandoUbicacion = true, errorUbicacion = null) }
+    }
+
+    fun onUbicacionObtenida(latitud: Double, longitud: Double) {
+        _formulario.update {
+            it.copy(latitud = latitud, longitud = longitud, cargandoUbicacion = false, errorUbicacion = null)
+        }
+    }
+
+    fun onUbicacionError(mensaje: String) {
+        _formulario.update { it.copy(cargandoUbicacion = false, errorUbicacion = mensaje) }
     }
 
 
@@ -84,7 +103,7 @@ class PruebaViewModel(application: Application) : AndroidViewModel(application) 
             return
         }
 
-        // Fecha y hora automáticas (Ej: 27/10/2026 12:30)
+
         val fechaActual = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date())
 
         viewModelScope.launch {
@@ -95,7 +114,9 @@ class PruebaViewModel(application: Application) : AndroidViewModel(application) 
                     tipoEquipo = equipo.tipo,
                     valorMedicion = estado.medicion.trim(),
                     fecha = fechaActual,
-                    fotoUri = estado.fotoUri
+                    fotoUri = estado.fotoUri,
+                    latitud = estado.latitud,
+                    longitud = estado.longitud
                 )
             )
             _formulario.update { it.copy(guardado = true) }

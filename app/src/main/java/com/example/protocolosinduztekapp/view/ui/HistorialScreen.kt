@@ -9,7 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -18,6 +18,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.example.protocolosinduztekapp.navegations.Routes
 import com.example.protocolosinduztekapp.repository.models.PruebaEntity
 import com.example.protocolosinduztekapp.viewmodels.PruebaViewModel
 import java.util.Locale
@@ -27,6 +28,9 @@ import java.util.Locale
 @Composable
 fun HistorialScreen(navController: NavController, viewModel: PruebaViewModel, pruebas: List<PruebaEntity>) {
     val context = LocalContext.current
+
+    // Prueba que el usuario quiere eliminar (null = no se muestra el diálogo)
+    var pruebaAEliminar by remember { mutableStateOf<PruebaEntity?>(null) }
 
     Scaffold(
         topBar = {
@@ -65,8 +69,9 @@ fun HistorialScreen(navController: NavController, viewModel: PruebaViewModel, pr
                 } else {
                     items(pruebas, key = { it.id }) { item ->
                         Card(
+                            onClick = { navController.navigate(Routes.protocolo(item.id)) },
                             modifier = Modifier
-                                .animateItem()
+                                .animateItem() // ANIMACIÓN 4: las tarjetas se acomodan al eliminar
                                 .fillMaxWidth()
                                 .padding(vertical = 4.dp),
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -102,7 +107,7 @@ fun HistorialScreen(navController: NavController, viewModel: PruebaViewModel, pr
                                     Text("Equipo: ${item.tipoEquipo}", style = MaterialTheme.typography.titleSmall)
                                     Text("Código: ${item.codigoEquipo} | Medición: ${item.valorMedicion}", style = MaterialTheme.typography.bodyMedium)
                                     Spacer(modifier = Modifier.height(4.dp))
-
+                                    // Fecha registrada automáticamente
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Icon(
                                             Icons.Default.Schedule,
@@ -112,30 +117,28 @@ fun HistorialScreen(navController: NavController, viewModel: PruebaViewModel, pr
                                         )
                                         Spacer(modifier = Modifier.width(4.dp))
                                         Text(item.fecha, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.secondary)
+                                    }
 
-                                        if (item.latitud != null && item.longitud != null) {
-                                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                                Icon(
-                                                    Icons.Default.LocationOn,
-                                                    contentDescription = null,
-                                                    tint = MaterialTheme.colorScheme.secondary,
-                                                    modifier = Modifier.size(14.dp)
-                                                )
-                                                Spacer(modifier = Modifier.width(4.dp))
-                                                Text(
-                                                    String.format(Locale.US, "%.4f, %.4f", item.latitud, item.longitud),
-                                                    style = MaterialTheme.typography.labelSmall,
-                                                    color = MaterialTheme.colorScheme.secondary
-                                                )
-                                            }
+                                    if (item.latitud != null && item.longitud != null) {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Icon(
+                                                Icons.Default.LocationOn,
+                                                contentDescription = null,
+                                                tint = MaterialTheme.colorScheme.secondary,
+                                                modifier = Modifier.size(14.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Text(
+                                                String.format(Locale.US, "%.4f, %.4f", item.latitud, item.longitud),
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = MaterialTheme.colorScheme.secondary
+                                            )
                                         }
                                     }
                                 }
 
-                                IconButton(onClick = {
-                                    viewModel.eliminarPrueba(item)
-                                    Toast.makeText(context, "Protocolo eliminado", Toast.LENGTH_SHORT).show()
-                                }) {
+
+                                IconButton(onClick = { pruebaAEliminar = item }) {
                                     Icon(
                                         imageVector = Icons.Default.Delete,
                                         contentDescription = "Eliminar",
@@ -148,5 +151,25 @@ fun HistorialScreen(navController: NavController, viewModel: PruebaViewModel, pr
                 }
             }
         }
+    }
+
+
+    pruebaAEliminar?.let { prueba ->
+        AlertDialog(
+            onDismissRequest = { pruebaAEliminar = null },
+            icon = { Icon(Icons.Default.Delete, contentDescription = null) },
+            title = { Text("Eliminar protocolo") },
+            text = { Text("¿Eliminar la prueba de ${prueba.codigoEquipo} del ${prueba.fecha}? Esta acción no se puede deshacer.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.eliminarPrueba(prueba)
+                    pruebaAEliminar = null
+                    Toast.makeText(context, "Protocolo eliminado", Toast.LENGTH_SHORT).show()
+                }) { Text("Eliminar") }
+            },
+            dismissButton = {
+                TextButton(onClick = { pruebaAEliminar = null }) { Text("Cancelar") }
+            }
+        )
     }
 }

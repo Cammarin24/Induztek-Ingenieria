@@ -26,13 +26,13 @@ import com.example.protocolosinduztekapp.viewmodels.EquipoViewModel
 import java.util.Locale
 import kotlin.math.abs
 
-// --- 6. DETALLE DEL EQUIPO: datos, comparación e historial de pruebas ---
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetalleEquipoScreen(navController: NavController, viewModel: EquipoViewModel, equipoId: Long) {
     val estado by viewModel.detalle.collectAsState()
 
-    // Carga el equipo y su historial al entrar
+
     LaunchedEffect(equipoId) { viewModel.cargarDetalle(equipoId) }
 
     val equipo = estado.equipo
@@ -57,7 +57,7 @@ fun DetalleEquipoScreen(navController: NavController, viewModel: EquipoViewModel
         }
     ) { padding ->
         if (equipo == null || equipo.id != equipoId) {
-            // Mientras carga
+
             Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
@@ -81,10 +81,14 @@ fun DetalleEquipoScreen(navController: NavController, viewModel: EquipoViewModel
                 }
 
                 items(estado.pruebas, key = { it.id }) { prueba ->
-                    TarjetaPrueba(prueba = prueba, modifier = Modifier.animateItem())
+                    TarjetaPrueba(
+                        prueba = prueba,
+                        onVerProtocolo = { navController.navigate(Routes.protocolo(prueba.id)) },
+                        modifier = Modifier.animateItem()
+                    )
                 }
 
-                // Espacio al final para que el botón flotante no tape la última prueba
+
                 item { Spacer(modifier = Modifier.height(72.dp)) }
             }
         }
@@ -184,12 +188,13 @@ private fun TarjetaComparacion(comparacion: Comparacion?, totalPruebas: Int) {
     }
 }
 
+// U
 @Composable
-private fun TarjetaPrueba(prueba: PruebaEntity, modifier: Modifier = Modifier) {
+private fun TarjetaPrueba(prueba: PruebaEntity, onVerProtocolo: () -> Unit, modifier: Modifier = Modifier) {
     var expandida by remember(prueba.id) { mutableStateOf(false) }
 
     Card(onClick = { expandida = !expandida }, modifier = modifier.fillMaxWidth()) {
-
+        // ANIMACIÓN 5: la tarjeta cambia de tamaño suavemente al expandirse
         Column(modifier = Modifier.animateContentSize().padding(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.Schedule, contentDescription = null, modifier = Modifier.size(16.dp))
@@ -231,6 +236,11 @@ private fun TarjetaPrueba(prueba: PruebaEntity, modifier: Modifier = Modifier) {
                 } else {
                     Text("Sin ubicación registrada", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
                 }
+                TextButton(onClick = onVerProtocolo) {
+                    Icon(Icons.Default.Description, contentDescription = null)
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("Ver protocolo")
+                }
             }
         }
     }
@@ -240,4 +250,3 @@ private fun TarjetaPrueba(prueba: PruebaEntity, modifier: Modifier = Modifier) {
 private fun formatear(valor: Double): String =
     if (valor % 1.0 == 0.0) valor.toLong().toString()
     else String.format(Locale.getDefault(), "%.2f", valor)
-

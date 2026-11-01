@@ -15,12 +15,14 @@ import com.example.protocolosinduztekapp.view.ui.EquiposScreen
 import com.example.protocolosinduztekapp.view.ui.FormularioScreen
 import com.example.protocolosinduztekapp.view.ui.HistorialScreen
 import com.example.protocolosinduztekapp.view.ui.NuevoEquipoScreen
+import com.example.protocolosinduztekapp.view.ui.ProtocoloScreen
 import com.example.protocolosinduztekapp.view.utils.navEnterTransition
 import com.example.protocolosinduztekapp.view.utils.navExitTransition
 import com.example.protocolosinduztekapp.view.utils.navPopEnterTransition
 import com.example.protocolosinduztekapp.view.utils.navPopExitTransition
 import com.example.protocolosinduztekapp.viewmodels.EquipoViewModel
 import com.example.protocolosinduztekapp.viewmodels.PruebaViewModel
+
 
 object Routes {
     const val DASHBOARD = "dashboard"
@@ -30,9 +32,11 @@ object Routes {
     const val EQUIPOS = "equipos"
     const val NUEVO_EQUIPO = "nuevo_equipo"
     const val DETALLE_EQUIPO = "detalle_equipo/{equipoId}"
+    const val PROTOCOLO = "protocolo/{pruebaId}"
 
     fun formularioConEquipo(equipoId: Long) = "formulario?equipoId=$equipoId"
     fun detalleEquipo(equipoId: Long) = "detalle_equipo/$equipoId"
+    fun protocolo(pruebaId: Long) = "protocolo/$pruebaId"
 }
 
 @Composable
@@ -83,6 +87,16 @@ fun AppNavigation(viewModel: PruebaViewModel) {
                 navController = navController,
                 viewModel = equipoViewModel,
                 equipoId = entry.arguments?.getLong("equipoId") ?: 0L
+            )
+        }
+        composable(
+            route = Routes.PROTOCOLO,
+            arguments = listOf(navArgument("pruebaId") { type = NavType.LongType })
+        ) { entry ->
+            ProtocoloScreen(
+                navController = navController,
+                viewModel = viewModel,
+                pruebaId = entry.arguments?.getLong("pruebaId") ?: 0L
             )
         }
     }

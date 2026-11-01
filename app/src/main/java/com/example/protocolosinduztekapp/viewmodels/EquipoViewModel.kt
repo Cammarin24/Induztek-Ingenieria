@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlin.math.abs
+
 
 
 data class EquipoFormUiState(
@@ -155,17 +155,9 @@ class EquipoViewModel(application: Application) : AndroidViewModel(application) 
     }
 
 
+
     private fun calcularComparacion(pruebas: List<PruebaEntity>): Comparacion? {
         if (pruebas.size < 2) return null
-        val actual = pruebas[0].valorMedicion.replace(',', '.').toDoubleOrNull() ?: return null
-        val anterior = pruebas[1].valorMedicion.replace(',', '.').toDoubleOrNull() ?: return null
-        if (anterior == 0.0) return null
-        val diferencia = (actual - anterior) / anterior * 100
-        return Comparacion(
-            actual = actual,
-            anterior = anterior,
-            diferenciaPorcentaje = diferencia,
-            requiereRevision = abs(diferencia) > 10
-        )
+        return compararMediciones(pruebas[0].valorMedicion, pruebas[1].valorMedicion)
     }
 }

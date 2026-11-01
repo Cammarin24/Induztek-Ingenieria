@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -33,6 +34,18 @@ data class FormularioUiState(
     val guardado: Boolean = false
 )
 
+
+
+
+data class ProtocoloUiState(
+    val prueba: PruebaEntity? = null,
+    val equipo: EquipoEntity? = null,
+    val anterior: PruebaEntity? = null,
+    val comparacion: Comparacion? = null,
+    val numero: String = "",
+    val resultado: String = "",
+    val cargando: Boolean = true
+)
 class PruebaViewModel(application: Application) : AndroidViewModel(application) {
 
 
@@ -50,7 +63,6 @@ class PruebaViewModel(application: Application) : AndroidViewModel(application) 
 
     private val _formulario = MutableStateFlow(FormularioUiState())
     val formulario: StateFlow<FormularioUiState> = _formulario.asStateFlow()
-
 
     fun onEquipoSeleccionado(equipo: EquipoEntity) {
         _formulario.update {
@@ -77,7 +89,7 @@ class PruebaViewModel(application: Application) : AndroidViewModel(application) 
         _formulario.update { it.copy(fotoUri = uri) }
     }
 
-
+    // Ubicación
     fun onUbicacionCargando() {
         _formulario.update { it.copy(cargandoUbicacion = true, errorUbicacion = null) }
     }
@@ -132,6 +144,39 @@ class PruebaViewModel(application: Application) : AndroidViewModel(application) 
     fun limpiarFormulario() {
         _formulario.value = FormularioUiState()
     }
+
+    private val _protocolo = MutableStateFlow(ProtocoloUiState())
+    val protocolo: StateFlow<ProtocoloUiState> = _protocolo.asStateFlow()
+
+
+    fun cargarProtocolo(pruebaId: Long) {
+        viewModelScope.launch {
+            _protocolo.value = ProtocoloUiState(cargando = true)
+
+            val prueba = repository.obtenerPrueba(pruebaId)
+            if (prueba == null) {
+                _protocolo.value = ProtocoloUiState(cargando = false)
+                return@launch
+            }
+
+            val equipo = repository.obtenerEquipo(prueba.equipoId)
+            val historial = repository.pruebasDeEquipo(prueba.equipoId).first() // de la más nueva a la más antigua
+            val posicion = historial.indexOfFirst { it.id == prueba.id }
+            val anterior = if (posicion >= 0) historial.getOrNull(posicion + 1) else null
+            val comparacion = anterior?.let { compararMediciones(prueba.valorMedicion, it.valorMedicion) }
+
+            _protocolo.value = ProtocoloUiState(
+                prueba = prueba,
+                equipo = equipo,
+                anterior = anterior,
+                comparacion = comparacion,
+                numero = String.format(Locale.US, "PR-%04d", prueba.id),
+                resultado = if (comparacion?.requiereRevision == true) "REVISAR" else "CONFORME",
+                cargando = false
+            )
+        }
+    }
+
 
     fun eliminarPrueba(prueba: PruebaEntity) {
         viewModelScope.launch {

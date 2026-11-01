@@ -33,10 +33,13 @@ import com.example.protocolosinduztekapp.view.utils.IconoEstado
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FormularioScreen(navController: NavController, viewModel: PruebaViewModel) {
+fun FormularioScreen(navController: NavController, viewModel: PruebaViewModel, equipoIdInicial: Long = 0L) {
     val context = LocalContext.current
     val estado by viewModel.formulario.collectAsState()
     val equipos by viewModel.equipos.collectAsState()
+    LaunchedEffect(equipoIdInicial, equipos) {
+        if (equipoIdInicial > 0) viewModel.preseleccionarEquipo(equipoIdInicial)
+    }
 
 
     var menuAbierto by remember { mutableStateOf(false) }

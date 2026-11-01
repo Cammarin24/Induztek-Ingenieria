@@ -62,6 +62,12 @@ class PruebaViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
+
+    fun preseleccionarEquipo(equipoId: Long) {
+        if (_formulario.value.equipoId != null) return
+        equipos.value.firstOrNull { it.id == equipoId }?.let { onEquipoSeleccionado(it) }
+    }
+
     fun onMedicionChange(valor: String) {
         _formulario.update { it.copy(medicion = valor, errorMedicion = Validaciones.validarMedicion(valor)) }
     }

@@ -64,7 +64,10 @@ fun EquiposScreen(navController: NavController, viewModel: EquipoViewModel) {
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(equipos, key = { it.id }) { equipo ->
-                    Card(modifier = Modifier.animateItem().fillMaxWidth()) {
+                    Card(
+                        onClick = { navController.navigate(Routes.detalleEquipo(equipo.id)) },
+                        modifier = Modifier.animateItem().fillMaxWidth()
+                    ) {
                         Row(
                             modifier = Modifier.fillMaxWidth().padding(12.dp),
                             verticalAlignment = Alignment.CenterVertically

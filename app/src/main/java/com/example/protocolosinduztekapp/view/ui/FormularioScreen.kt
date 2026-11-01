@@ -28,6 +28,7 @@ import com.example.protocolosinduztekapp.view.utils.obtenerUbicacionActual
 import com.example.protocolosinduztekapp.view.utils.tienePermisoUbicacion
 import com.example.protocolosinduztekapp.viewmodels.PruebaViewModel
 import java.util.Locale
+import com.example.protocolosinduztekapp.view.utils.IconoEstado
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -255,18 +256,3 @@ fun FormularioScreen(navController: NavController, viewModel: PruebaViewModel) {
     }
 }
 
-@Composable
-private fun IconoEstado(valor: String, error: String?) {
-    when {
-        error != null -> Icon(
-            Icons.Default.Warning,
-            contentDescription = "Error",
-            tint = MaterialTheme.colorScheme.error
-        )
-        valor.isNotBlank() -> Icon(
-            Icons.Default.CheckCircle,
-            contentDescription = "Correcto",
-            tint = Color(0xFF2E7D32)
-        )
-    }
-}

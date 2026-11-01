@@ -3,29 +3,38 @@ package com.example.protocolosinduztekapp.navegations
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.protocolosinduztekapp.view.ui.DashboardScreen
+import com.example.protocolosinduztekapp.view.ui.EquiposScreen
 import com.example.protocolosinduztekapp.view.ui.FormularioScreen
 import com.example.protocolosinduztekapp.view.ui.HistorialScreen
+import com.example.protocolosinduztekapp.view.ui.NuevoEquipoScreen
 import com.example.protocolosinduztekapp.view.utils.navEnterTransition
 import com.example.protocolosinduztekapp.view.utils.navExitTransition
 import com.example.protocolosinduztekapp.view.utils.navPopEnterTransition
 import com.example.protocolosinduztekapp.view.utils.navPopExitTransition
+import com.example.protocolosinduztekapp.viewmodels.EquipoViewModel
 import com.example.protocolosinduztekapp.viewmodels.PruebaViewModel
 
-// Rutas de navegación centralizadas
+
 object Routes {
     const val DASHBOARD = "dashboard"
     const val FORMULARIO = "formulario"
     const val HISTORIAL = "historial"
+    const val EQUIPOS = "equipos"
+    const val NUEVO_EQUIPO = "nuevo_equipo"
 }
 
 @Composable
 fun AppNavigation(viewModel: PruebaViewModel) {
     val navController = rememberNavController()
     val pruebas by viewModel.listaPruebas.collectAsState()
+
+
+    val equipoViewModel: EquipoViewModel = viewModel()
 
     NavHost(
         navController = navController,
@@ -44,6 +53,12 @@ fun AppNavigation(viewModel: PruebaViewModel) {
         }
         composable(Routes.HISTORIAL) {
             HistorialScreen(navController = navController, viewModel = viewModel, pruebas = pruebas)
+        }
+        composable(Routes.EQUIPOS) {
+            EquiposScreen(navController = navController, viewModel = equipoViewModel)
+        }
+        composable(Routes.NUEVO_EQUIPO) {
+            NuevoEquipoScreen(navController = navController, viewModel = equipoViewModel)
         }
     }
 }

@@ -2,6 +2,7 @@ package com.example.protocolosinduztekapp.view.ui
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -12,7 +13,7 @@ import androidx.navigation.NavController
 import com.example.protocolosinduztekapp.navegations.Routes
 import com.example.protocolosinduztekapp.view.utils.pulsoYRotacion
 
-// --- 1. DASHBOARD ---
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(navController: NavController, totalRegistros: Int) {
@@ -63,9 +64,20 @@ fun DashboardScreen(navController: NavController, totalRegistros: Int) {
                 onClick = { navController.navigate(Routes.HISTORIAL) },
                 modifier = Modifier.fillMaxWidth().height(50.dp)
             ) {
-                Icon(Icons.Default.List, contentDescription = null)
+                Icon(Icons.AutoMirrored.Filled.List, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("Ver Historial de Pruebas")
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedButton(
+                onClick = { navController.navigate(Routes.EQUIPOS) },
+                modifier = Modifier.fillMaxWidth().height(50.dp)
+            ) {
+                Icon(Icons.Default.ElectricalServices, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Ver Equipos")
             }
         }
     }

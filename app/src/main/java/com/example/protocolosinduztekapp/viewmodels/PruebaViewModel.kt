@@ -23,6 +23,7 @@ data class FormularioUiState(
     val equipoId: Long? = null,
     val equipoTexto: String = "",
     val medicion: String = "",
+    val fotoUri: String? = null,
     val errorEquipo: String? = null,
     val errorMedicion: String? = null,
     val guardado: Boolean = false
@@ -34,7 +35,7 @@ class PruebaViewModel(application: Application) : AndroidViewModel(application) 
     private val db = AppDatabase.obtenerBaseDatos(application)
     private val repository = InduztekRepository(db.equipoDao(), db.pruebaDao())
 
-    // Lista de pruebas guardadas
+
     val listaPruebas: StateFlow<List<PruebaEntity>> = repository.pruebas
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
@@ -42,7 +43,7 @@ class PruebaViewModel(application: Application) : AndroidViewModel(application) 
     val equipos: StateFlow<List<EquipoEntity>> = repository.equipos
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
-    // Estado del formulario que observa la pantalla
+
     private val _formulario = MutableStateFlow(FormularioUiState())
     val formulario: StateFlow<FormularioUiState> = _formulario.asStateFlow()
 
@@ -59,6 +60,11 @@ class PruebaViewModel(application: Application) : AndroidViewModel(application) 
 
     fun onMedicionChange(valor: String) {
         _formulario.update { it.copy(medicion = valor, errorMedicion = Validaciones.validarMedicion(valor)) }
+    }
+
+    // La cámara devuelve la ruta de la foto tomada
+    fun onFotoTomada(uri: String) {
+        _formulario.update { it.copy(fotoUri = uri) }
     }
 
 
@@ -78,7 +84,7 @@ class PruebaViewModel(application: Application) : AndroidViewModel(application) 
             return
         }
 
-
+        // Fecha y hora automáticas (Ej: 27/10/2026 12:30)
         val fechaActual = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date())
 
         viewModelScope.launch {
@@ -88,7 +94,8 @@ class PruebaViewModel(application: Application) : AndroidViewModel(application) 
                     codigoEquipo = equipo.codigo,
                     tipoEquipo = equipo.tipo,
                     valorMedicion = estado.medicion.trim(),
-                    fecha = fechaActual
+                    fecha = fechaActual,
+                    fotoUri = estado.fotoUri
                 )
             )
             _formulario.update { it.copy(guardado = true) }

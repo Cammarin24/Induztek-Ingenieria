@@ -2,11 +2,16 @@ package com.example.protocolosinduztekapp.view.ui
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -14,6 +19,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.protocolosinduztekapp.view.utils.AnimacionEntradaFormulario
+import com.example.protocolosinduztekapp.view.utils.CameraCapture
+import com.example.protocolosinduztekapp.view.utils.PhotoBox
 import com.example.protocolosinduztekapp.viewmodels.PruebaViewModel
 
 
@@ -26,6 +33,10 @@ fun FormularioScreen(navController: NavController, viewModel: PruebaViewModel) {
 
 
     var menuAbierto by remember { mutableStateOf(false) }
+
+
+    var mostrarCamara by rememberSaveable { mutableStateOf(false) }
+
 
     var visible by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { visible = true }
@@ -43,13 +54,26 @@ fun FormularioScreen(navController: NavController, viewModel: PruebaViewModel) {
         }
     }
 
+    // RECURSO NATIVO 1: cámara para la foto de evidencia
+    if (mostrarCamara) {
+        CameraCapture(
+            carpeta = "pruebas",
+            onImageCaptured = { uri ->
+                viewModel.onFotoTomada(uri.toString())
+                mostrarCamara = false
+            },
+            onClose = { mostrarCamara = false }
+        )
+        return
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Nuevo Protocolo") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
                     }
                 }
             )
@@ -61,6 +85,7 @@ fun FormularioScreen(navController: NavController, viewModel: PruebaViewModel) {
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
+                    .verticalScroll(rememberScrollState())
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
@@ -75,7 +100,7 @@ fun FormularioScreen(navController: NavController, viewModel: PruebaViewModel) {
                         readOnly = true,
                         label = { Text("Equipo") },
                         placeholder = { Text("Selecciona un equipo") },
-                        leadingIcon = { Icon(Icons.Default.Build, contentDescription = null) },
+                        leadingIcon = { Icon(Icons.Default.ElectricalServices, contentDescription = null) },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = menuAbierto) },
                         isError = estado.errorEquipo != null,
                         supportingText = { estado.errorEquipo?.let { Text(it) } },
@@ -103,7 +128,7 @@ fun FormularioScreen(navController: NavController, viewModel: PruebaViewModel) {
                     value = estado.medicion,
                     onValueChange = viewModel::onMedicionChange,
                     label = { Text("Valor de Medición (V / A)") },
-                    leadingIcon = { Icon(Icons.Default.Info, contentDescription = null) },
+                    leadingIcon = { Icon(Icons.Default.Speed, contentDescription = null) },
                     trailingIcon = { IconoEstado(valor = estado.medicion, error = estado.errorMedicion) },
                     isError = estado.errorMedicion != null,
                     supportingText = { estado.errorMedicion?.let { Text(it) } },
@@ -111,6 +136,17 @@ fun FormularioScreen(navController: NavController, viewModel: PruebaViewModel) {
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
+
+
+                Text("Foto de evidencia (opcional)", style = MaterialTheme.typography.labelLarge)
+                Spacer(modifier = Modifier.height(4.dp))
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    PhotoBox(
+                        imageUri = estado.fotoUri,
+                        circle = false,
+                        onTakePhoto = { mostrarCamara = true }
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(16.dp))
 

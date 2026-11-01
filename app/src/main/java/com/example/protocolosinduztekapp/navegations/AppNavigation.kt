@@ -9,6 +9,10 @@ import androidx.navigation.compose.rememberNavController
 import com.example.protocolosinduztekapp.view.ui.DashboardScreen
 import com.example.protocolosinduztekapp.view.ui.FormularioScreen
 import com.example.protocolosinduztekapp.view.ui.HistorialScreen
+import com.example.protocolosinduztekapp.view.utils.navEnterTransition
+import com.example.protocolosinduztekapp.view.utils.navExitTransition
+import com.example.protocolosinduztekapp.view.utils.navPopEnterTransition
+import com.example.protocolosinduztekapp.view.utils.navPopExitTransition
 import com.example.protocolosinduztekapp.viewmodels.PruebaViewModel
 
 // Rutas de navegación centralizadas
@@ -23,7 +27,15 @@ fun AppNavigation(viewModel: PruebaViewModel) {
     val navController = rememberNavController()
     val pruebas by viewModel.listaPruebas.collectAsState()
 
-    NavHost(navController = navController, startDestination = Routes.DASHBOARD) {
+    NavHost(
+        navController = navController,
+        startDestination = Routes.DASHBOARD,
+
+        enterTransition = navEnterTransition,
+        exitTransition = navExitTransition,
+        popEnterTransition = navPopEnterTransition,
+        popExitTransition = navPopExitTransition
+    ) {
         composable(Routes.DASHBOARD) {
             DashboardScreen(navController = navController, totalRegistros = pruebas.size)
         }
@@ -35,4 +47,3 @@ fun AppNavigation(viewModel: PruebaViewModel) {
         }
     }
 }
-

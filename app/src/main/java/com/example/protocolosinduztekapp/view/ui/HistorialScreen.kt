@@ -57,9 +57,10 @@ fun HistorialScreen(navController: NavController, viewModel: PruebaViewModel, pr
                         }
                     }
                 } else {
-                    items(pruebas) { item ->
+                    items(pruebas, key = { it.id }) { item ->
                         Card(
                             modifier = Modifier
+                                .animateItem()
                                 .fillMaxWidth()
                                 .padding(vertical = 4.dp),
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -75,7 +76,7 @@ fun HistorialScreen(navController: NavController, viewModel: PruebaViewModel, pr
                                     Text("Equipo: ${item.tipoEquipo}", style = MaterialTheme.typography.titleSmall)
                                     Text("Código: ${item.codigoEquipo} | Medición: ${item.valorMedicion}", style = MaterialTheme.typography.bodyMedium)
                                     Spacer(modifier = Modifier.height(4.dp))
-                                    // Muestra la fecha registrada automáticamente
+
                                     Text("🕒 ${item.fecha}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.secondary)
                                 }
                                 IconButton(onClick = {

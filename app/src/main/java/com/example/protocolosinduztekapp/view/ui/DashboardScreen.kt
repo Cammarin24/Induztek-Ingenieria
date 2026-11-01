@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.protocolosinduztekapp.navegations.Routes
+import com.example.protocolosinduztekapp.view.utils.pulsoYRotacion
 
 // --- 1. DASHBOARD ---
 @OptIn(ExperimentalMaterial3Api::class)
@@ -37,7 +38,7 @@ fun DashboardScreen(navController: NavController, totalRegistros: Int) {
             Icon(
                 imageVector = Icons.Default.Build,
                 contentDescription = null,
-                modifier = Modifier.size(64.dp),
+                modifier = Modifier.size(64.dp).pulsoYRotacion(),
                 tint = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.height(16.dp))

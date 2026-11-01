@@ -1,6 +1,5 @@
 package com.example.protocolosinduztekapp.repository.data
 
-
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -14,6 +13,13 @@ import kotlinx.coroutines.flow.Flow
 interface PruebaDao {
     @Query("SELECT * FROM tabla_pruebas ORDER BY id DESC")
     fun obtenerPruebas(): Flow<List<PruebaEntity>>
+
+    // Historial de un equipo (para la pantalla de detalle y la comparación)
+    @Query("SELECT * FROM tabla_pruebas WHERE equipoId = :equipoId ORDER BY id DESC")
+    fun obtenerPruebasPorEquipo(equipoId: Long): Flow<List<PruebaEntity>>
+
+    @Query("SELECT * FROM tabla_pruebas WHERE id = :id")
+    suspend fun obtenerPruebaPorId(id: Long): PruebaEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertarPrueba(prueba: PruebaEntity)

@@ -9,6 +9,9 @@ object Validaciones {
 
     private val SOLO_LETRAS = Regex("^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$")
 
+    fun validarEquipo(equipoId: Long?): String? =
+        if (equipoId == null) "Selecciona un equipo de la lista" else null
+
     fun validarCodigo(codigo: String): String? = when {
         codigo.isBlank() -> "El código es obligatorio"
         !FORMATO_CODIGO.matches(codigo.trim()) -> "Formato: 2 letras, guion y 3 números (ej. TR-001)"
@@ -29,4 +32,3 @@ object Validaciones {
         return if (numero <= 0) "Debe ser mayor a 0" else null
     }
 }
-

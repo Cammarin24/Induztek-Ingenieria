@@ -3,7 +3,9 @@ package com.example.protocolosinduztekapp.viewmodels
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.protocolosinduztekapp.repository.InduztekRepository
 import com.example.protocolosinduztekapp.repository.data.AppDatabase
+import com.example.protocolosinduztekapp.repository.models.EquipoEntity
 import com.example.protocolosinduztekapp.repository.models.PruebaEntity
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -18,34 +20,41 @@ import java.util.Locale
 
 
 data class FormularioUiState(
-    val codigo: String = "",
-    val tipo: String = "",
+    val equipoId: Long? = null,
+    val equipoTexto: String = "",
     val medicion: String = "",
-    val errorCodigo: String? = null,
-    val errorTipo: String? = null,
+    val errorEquipo: String? = null,
     val errorMedicion: String? = null,
     val guardado: Boolean = false
 )
 
 class PruebaViewModel(application: Application) : AndroidViewModel(application) {
-    private val dao = AppDatabase.obtenerBaseDatos(application).pruebaDao()
 
 
-    val listaPruebas: StateFlow<List<PruebaEntity>> = dao.obtenerPruebas()
+    private val db = AppDatabase.obtenerBaseDatos(application)
+    private val repository = InduztekRepository(db.equipoDao(), db.pruebaDao())
+
+    // Lista de pruebas guardadas
+    val listaPruebas: StateFlow<List<PruebaEntity>> = repository.pruebas
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
 
+    val equipos: StateFlow<List<EquipoEntity>> = repository.equipos
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    // Estado del formulario que observa la pantalla
     private val _formulario = MutableStateFlow(FormularioUiState())
     val formulario: StateFlow<FormularioUiState> = _formulario.asStateFlow()
 
 
-    fun onCodigoChange(valor: String) {
-        val codigo = valor.uppercase()
-        _formulario.update { it.copy(codigo = codigo, errorCodigo = Validaciones.validarCodigo(codigo)) }
-    }
-
-    fun onTipoChange(valor: String) {
-        _formulario.update { it.copy(tipo = valor, errorTipo = Validaciones.validarTipo(valor)) }
+    fun onEquipoSeleccionado(equipo: EquipoEntity) {
+        _formulario.update {
+            it.copy(
+                equipoId = equipo.id,
+                equipoTexto = "${equipo.codigo} · ${equipo.tipo}",
+                errorEquipo = null
+            )
+        }
     }
 
     fun onMedicionChange(valor: String) {
@@ -55,42 +64,44 @@ class PruebaViewModel(application: Application) : AndroidViewModel(application) 
 
     fun guardarFormulario() {
         val estado = _formulario.value
-        val errorCodigo = Validaciones.validarCodigo(estado.codigo)
-        val errorTipo = Validaciones.validarTipo(estado.tipo)
+        val errorEquipo = Validaciones.validarEquipo(estado.equipoId)
         val errorMedicion = Validaciones.validarMedicion(estado.medicion)
 
-        if (errorCodigo != null || errorTipo != null || errorMedicion != null) {
-            _formulario.update {
-                it.copy(errorCodigo = errorCodigo, errorTipo = errorTipo, errorMedicion = errorMedicion)
-            }
+        if (errorEquipo != null || errorMedicion != null) {
+            _formulario.update { it.copy(errorEquipo = errorEquipo, errorMedicion = errorMedicion) }
+            return
+        }
+
+        val equipo = equipos.value.firstOrNull { it.id == estado.equipoId }
+        if (equipo == null) {
+            _formulario.update { it.copy(errorEquipo = "El equipo seleccionado ya no existe") }
             return
         }
 
 
         val fechaActual = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date())
-        guardarPrueba(estado.codigo.trim(), estado.tipo.trim(), estado.medicion.trim(), fechaActual)
-        _formulario.update { it.copy(guardado = true) }
+
+        viewModelScope.launch {
+            repository.guardarPrueba(
+                PruebaEntity(
+                    equipoId = equipo.id,
+                    codigoEquipo = equipo.codigo,
+                    tipoEquipo = equipo.tipo,
+                    valorMedicion = estado.medicion.trim(),
+                    fecha = fechaActual
+                )
+            )
+            _formulario.update { it.copy(guardado = true) }
+        }
     }
 
     fun limpiarFormulario() {
         _formulario.value = FormularioUiState()
     }
 
-    fun guardarPrueba(codigo: String, tipo: String, medicion: String, fecha: String) {
-        viewModelScope.launch {
-            val nuevaPrueba = PruebaEntity(
-                codigoEquipo = codigo,
-                tipoEquipo = tipo,
-                valorMedicion = medicion,
-                fecha = fecha
-            )
-            dao.insertarPrueba(nuevaPrueba)
-        }
-    }
-
     fun eliminarPrueba(prueba: PruebaEntity) {
         viewModelScope.launch {
-            dao.eliminarPrueba(prueba)
+            repository.eliminarPrueba(prueba)
         }
     }
 }

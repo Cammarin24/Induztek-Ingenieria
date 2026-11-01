@@ -22,7 +22,10 @@ import com.example.protocolosinduztekapp.viewmodels.PruebaViewModel
 fun FormularioScreen(navController: NavController, viewModel: PruebaViewModel) {
     val context = LocalContext.current
     val estado by viewModel.formulario.collectAsState()
+    val equipos by viewModel.equipos.collectAsState()
 
+
+    var menuAbierto by remember { mutableStateOf(false) }
 
     var visible by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { visible = true }
@@ -61,30 +64,40 @@ fun FormularioScreen(navController: NavController, viewModel: PruebaViewModel) {
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                OutlinedTextField(
-                    value = estado.codigo,
-                    onValueChange = viewModel::onCodigoChange,
-                    label = { Text("Código del Equipo") },
-                    placeholder = { Text("TR-001") },
-                    leadingIcon = { Icon(Icons.Default.Edit, contentDescription = null) },
-                    trailingIcon = { IconoEstado(valor = estado.codigo, error = estado.errorCodigo) },
-                    isError = estado.errorCodigo != null,
-                    supportingText = { estado.errorCodigo?.let { Text(it) } },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
 
-                OutlinedTextField(
-                    value = estado.tipo,
-                    onValueChange = viewModel::onTipoChange,
-                    label = { Text("Tipo de Equipo (ej. Transformador)") },
-                    leadingIcon = { Icon(Icons.Default.Build, contentDescription = null) },
-                    trailingIcon = { IconoEstado(valor = estado.tipo, error = estado.errorTipo) },
-                    isError = estado.errorTipo != null,
-                    supportingText = { estado.errorTipo?.let { Text(it) } },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                ExposedDropdownMenuBox(
+                    expanded = menuAbierto,
+                    onExpandedChange = { menuAbierto = it }
+                ) {
+                    OutlinedTextField(
+                        value = estado.equipoTexto,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Equipo") },
+                        placeholder = { Text("Selecciona un equipo") },
+                        leadingIcon = { Icon(Icons.Default.Build, contentDescription = null) },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = menuAbierto) },
+                        isError = estado.errorEquipo != null,
+                        supportingText = { estado.errorEquipo?.let { Text(it) } },
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth()
+                    )
+                    ExposedDropdownMenu(
+                        expanded = menuAbierto,
+                        onDismissRequest = { menuAbierto = false }
+                    ) {
+                        equipos.forEach { equipo ->
+                            DropdownMenuItem(
+                                text = { Text("${equipo.codigo} · ${equipo.tipo}") },
+                                onClick = {
+                                    viewModel.onEquipoSeleccionado(equipo)
+                                    menuAbierto = false
+                                }
+                            )
+                        }
+                    }
+                }
 
                 OutlinedTextField(
                     value = estado.medicion,

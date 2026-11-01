@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    id("kotlin-kapt")
+    id("com.google.devtools.ksp") version "2.0.21-1.0.25"
     alias(libs.plugins.kotlin.compose)
 }
 
@@ -61,10 +61,10 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.0")
     implementation("androidx.navigation:navigation-compose:2.7.7")
 
-    // Agrega estas dos líneas de Room:
+
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
 
-    //  kapt:
-    kapt("androidx.room:room-compiler:2.6.1")
+
+    ksp("androidx.room:room-compiler:2.6.1")
 }
